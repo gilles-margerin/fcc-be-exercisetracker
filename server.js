@@ -42,7 +42,7 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
-app.post("/api/exercise/new-user", async (req, res) => {
+app.post("/api/exercise/new-user", async(req, res) => {
   const user = new User({
     _id: new mongoose.Types.ObjectId(),
     username: req.body.username,
@@ -54,6 +54,13 @@ app.post("/api/exercise/new-user", async (req, res) => {
     _id: userCreated._id
   });
 });
+
+app.get("/api/exercise/users", async(req, res) => {
+  const users = await User.find({})
+  res.send(users.map(user =>
+    ({username: user.username, _id: user._id})
+  ))
+})
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
