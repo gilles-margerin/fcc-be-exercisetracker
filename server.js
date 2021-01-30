@@ -21,11 +21,19 @@ const { Schema } = mongoose;
 const userSchema = new Schema({
   _id: String,
   username: String,
-  date: { type: Date, default: Date.now },
-  duration: Number,
-  description: String,
+  log: Array
 });
+
+
 const User = mongoose.model("User", userSchema);
+
+const formatDate = () => {
+  const date = new Date()
+  const year = date. getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  return `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`
+}
 
 app.use(cors());
 app.use(express.static("public"));
@@ -63,6 +71,30 @@ app.get("/api/exercise/users", async(req, res) => {
   ))
 })
 
+app.post("/api/exercise/add", async(req, res) => {
+  const exercise = {
+    description: req.body.description,
+    duration: req.body.duration,
+    date: req.body.date || formatDate()
+  }
+
+  const user = await User.findById(req.body.userId).catch(err => console.log(err))
+
+  user.log.push(exercise)
+
+  const result = await user.save().catch(err => console.log(err))
+
+  res.send({
+    _id: result._id,
+    username: result.username,
+    date: exercise.date,
+    duration: exercise.duration,
+    description: exercise.description
+  })
+})
+
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });
+
+/* {"_id":"600022187968d038e81e94e5","username":"qsdf","date":{"$date":{"$numberLong":"1610621464986"}},"__v":{"$numberInt":"0"}} */
