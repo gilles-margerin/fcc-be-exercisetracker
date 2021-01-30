@@ -27,12 +27,6 @@ const userSchema = new Schema({
 });
 const User = mongoose.model("User", userSchema);
 
-/* function formatDate(date) {
-  return typeof date !== 'string' ? 
-   `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`  
-  : date
-} */
-
 app.use(cors());
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -43,17 +37,24 @@ app.get("/", (req, res) => {
 });
 
 app.post("/api/exercise/new-user", async(req, res) => {
-  const user = new User({
-    _id: new mongoose.Types.ObjectId(),
-    username: req.body.username,
-  });
-  const userCreated = await user.save();
+  const checkUser = await User.exists({username: req.body.username})
 
-  res.send({
-    username: userCreated.username,
-    _id: userCreated._id
-  });
+  if (checkUser) {
+    res.send('User already exists')
+  } else {
+    const user = new User({
+      _id: new mongoose.Types.ObjectId(),
+      username: req.body.username,
+    });
+    const userCreated = await user.save();
+  
+    res.send({
+      username: userCreated.username,
+      _id: userCreated._id
+    });
+  }
 });
+
 
 app.get("/api/exercise/users", async(req, res) => {
   const users = await User.find({})
