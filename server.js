@@ -97,10 +97,11 @@ app.post("/api/exercise/add", async(req, res) => {
 })
 
 app.get("/api/exercise/log", async(req, res) => {
+  console.log(req.query)
   const user = await User.findById(req.query.userId)
   /* const result = user.map((from, to)) */
   console.log(user)
-  res.end(user)
+  res.send(user)
 })
 
 const listener = app.listen(process.env.PORT, () => {
