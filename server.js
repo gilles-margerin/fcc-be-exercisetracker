@@ -27,12 +27,20 @@ const userSchema = new Schema({
 
 const User = mongoose.model("User", userSchema);
 
-const formatDate = () => {
-  const date = new Date()
-  const year = date. getFullYear()
-  const month = date.getMonth() + 1
+const formatDate = (...args) => {
+  const weekDays = [
+    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+  ]
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ]
+
+  const date = args.length > 0 ? new Date([...args]) : new Date()
+  const year = date.getFullYear()
+  const month = months[date.getMonth()]
   const day = date.getDate()
-  return `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`
+  const weekDay = weekDays[date.getDay()]
+  return `${weekDay} ${month} ${day < 10 ? '0' + day : day} ${year}`
 }
 
 app.use(cors());
@@ -74,8 +82,8 @@ app.get("/api/exercise/users", async(req, res) => {
 app.post("/api/exercise/add", async(req, res) => {
   const exercise = {
     description: req.body.description,
-    duration: req.body.duration,
-    date: req.body.date || formatDate()
+    duration: Number(req.body.duration),
+    date: req.body.date || formatDate() 
   }
 
   const user = await User.findById(req.body.userId).catch(err => console.log(err))
