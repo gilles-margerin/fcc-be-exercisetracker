@@ -27,20 +27,15 @@ const userSchema = new Schema({
 
 const User = mongoose.model("User", userSchema);
 
-const formatDate = (...args) => {
-  const weekDays = [
-    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
-  ]
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ]
+const formatDate = (userDate) => {
+  let date;
 
-  const date = args.length > 0 ? new Date([...args]) : new Date()
-  const year = date.getFullYear()
-  const month = months[date.getMonth()]
-  const day = date.getDate()
-  const weekDay = weekDays[date.getDay()]
-  return `${weekDay} ${month} ${day < 10 ? '0' + day : day} ${year}`
+  if (userDate) {
+    date = new Date(userDate)
+  } else {
+    date = new Date()
+  }
+  return date.toDateString()
 }
 
 app.use(cors());
@@ -83,7 +78,7 @@ app.post("/api/exercise/add", async(req, res) => {
   const exercise = {
     description: req.body.description,
     duration: Number(req.body.duration),
-    date: req.body.date || formatDate() 
+    date: formatDate(req.body.date) 
   }
 
   const user = await User.findById(req.body.userId).catch(err => console.log(err))
@@ -101,8 +96,15 @@ app.post("/api/exercise/add", async(req, res) => {
   })
 })
 
-const listener = app.listen(process.env.PORT || 3000, () => {
+app.get("/api/exercise/log", async(req, res) => {
+  const user = await User.findById(req.query.userId)
+  /* const result = user.map((from, to)) */
+  console.log(user)
+  res.end(user)
+})
+
+const listener = app.listen(process.env.PORT, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });
 
-/* {"_id":"600022187968d038e81e94e5","username":"qsdf","date":{"$date":{"$numberLong":"1610621464986"}},"__v":{"$numberInt":"0"}} */
+    
