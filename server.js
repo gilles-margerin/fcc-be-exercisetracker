@@ -27,17 +27,6 @@ const userSchema = new Schema({
 
 const User = mongoose.model("User", userSchema);
 
-const formatDate = (userDate) => {
-  let date;
-
-  if (userDate) {
-    date = new Date(userDate)
-  } else {
-    date = new Date()
-  }
-  return date.toDateString()
-}
-
 app.use(cors());
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -78,7 +67,7 @@ app.post("/api/exercise/add", async(req, res) => {
   const exercise = {
     description: req.body.description,
     duration: Number(req.body.duration),
-    date: formatDate(req.body.date) 
+    date: req.body.date ? new Date(req.body.date) : new Date()
   }
 
   const user = await User.findById(req.body.userId).catch(err => console.log(err))
@@ -97,11 +86,23 @@ app.post("/api/exercise/add", async(req, res) => {
 })
 
 app.get("/api/exercise/log", async(req, res) => {
-  console.log(req.query)
-  const user = await User.findById(req.query.userId)
-  /* const result = user.map((from, to)) */
-  console.log(user)
-  res.send(user)
+  const from = req.query.from ? new Date(req.query.from) : ""
+  const to = req.query.to ? new Date(req.query.to) : ""
+
+  const user = await User.findById(req.query.userId).catch(err => console.log(err))
+
+  const result = user.log.filter(exercise => {
+    if (from && to) {
+      return (exercise.date >= from && exercise.date <= to)
+    } else if (from) {
+      return exercise.date >= from
+    } else if (to) {
+      return exercise.date <= to
+    }
+    return exercise
+  })
+
+  res.send(result)
 })
 
 const listener = app.listen(process.env.PORT, () => {
