@@ -79,7 +79,7 @@ app.post("/api/exercise/add", async(req, res) => {
   res.send({
     _id: result._id,
     username: result.username,
-    date: exercise.date,
+    date: exercise.date.toDateString(),
     duration: exercise.duration,
     description: exercise.description
   })
@@ -102,8 +102,7 @@ app.get("/api/exercise/log", async(req, res) => {
     return exercise
   })
 
-  const filteredResult = result.slice(0, req.query.limit)
-
+  const filteredResult = result.slice(0, req.query.limit);
   res.send(filteredResult)
 })
 
