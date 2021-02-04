@@ -102,7 +102,9 @@ app.get("/api/exercise/log", async(req, res) => {
     return exercise
   })
 
-  res.send(result)
+  const filteredResult = result.slice(0, req.query.limit)
+
+  res.send(filteredResult)
 })
 
 const listener = app.listen(process.env.PORT, () => {
