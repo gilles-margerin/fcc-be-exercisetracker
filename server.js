@@ -91,7 +91,7 @@ app.get("/api/exercise/log", async(req, res) => {
 
   const user = await User.findById(req.query.userId).catch(err => console.log(err))
 
-  const result = user.log.filter(exercise => {
+  const log = user.log.filter(exercise => {
     if (from && to) {
       return (exercise.date >= from && exercise.date <= to)
     } else if (from) {
@@ -100,11 +100,15 @@ app.get("/api/exercise/log", async(req, res) => {
       return exercise.date <= to
     }
     return exercise
-  })
+  }).slice(0, req.query.limit);
 
-  const filteredResult = result.slice(0, req.query.limit);
-  res.send(filteredResult)
-})
+  res.send({
+    _id: user._id,
+    username: user.username,
+    count: log.length,
+    log: log
+  })
+});
 
 const listener = app.listen(process.env.PORT, () => {
   console.log("Your app is listening on port " + listener.address().port);
