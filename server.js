@@ -98,8 +98,9 @@ app.get("/api/exercise/log", async(req, res) => {
 
   try {
     const user = await User.findById(req.query.userId)
+    const exercises = await Exercise.find({userId: req.query.userId})
 
-    const log = user.log.filter(exercise => {
+    const log = exercises.filter(exercise => {
       if (from && to) {
         return (exercise.date >= from && exercise.date <= to)
       } else if (from) {
@@ -108,10 +109,20 @@ app.get("/api/exercise/log", async(req, res) => {
         return exercise.date <= to
       }
       return exercise
-    }).slice(0, req.query.limit);
+    }).slice(0, req.query.limit)
+      .map(item => {
+        return {
+          description: item.description,
+          duration: item.duration,
+          date: item.date
+        }
+      })
 
     res.send({
-      
+      _id: user._id,
+      username: user.username,
+      count: log.length,
+      log: log  
     })
 
   } catch (err) {
