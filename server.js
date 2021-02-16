@@ -5,6 +5,9 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
+const User = require("./models/User.js")  
+const Exercise = require("./models/Exercise.js")
+
 mongoose.connect(process.env.DB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -16,16 +19,6 @@ const connection = mongoose.connection;
 connection.once("open", function () {
   console.log("MongoDB database connection established successfully");
 });
-
-const { Schema } = mongoose;
-const userSchema = new Schema({
-  _id: String,
-  username: String,
-  log: Array
-});
-
-
-const User = mongoose.model("User", userSchema);
 
 app.use(cors());
 app.use(express.static("public"));
@@ -47,6 +40,7 @@ app.post("/api/exercise/new-user", async(req, res) => {
   const user = await new User({
     _id: new mongoose.Types.ObjectId(),
     username: req.body.username,
+    exercises: 0
   }).save();
 
   res.send({
@@ -67,15 +61,16 @@ app.get("/api/exercise/users", async(req, res) => {
 })
 
 app.post("/api/exercise/add", async(req, res) => {
-  const exercise = {
-    description: req.body.description,
-    duration: Number(req.body.duration),
-    date: req.body.date ? new Date(req.body.date) : new Date()
-  }
-
   try {
     const user = await User.findById(req.body.userId)
-    user.log.push(exercise)
+    
+    const exercise = await new Exercise({
+      _id: new mongoose.Types.ObjectId(),
+      userId: user._id.toString(),
+      description: req.body.description,
+      duration: Number(req.body.duration),
+      date: req.body.date ? new Date(req.body.date) : new Date()
+    }).save()
 
     const result = await user.save()
 
@@ -116,10 +111,7 @@ app.get("/api/exercise/log", async(req, res) => {
     }).slice(0, req.query.limit);
 
     res.send({
-      _id: user._id,
-      username: user.username,
-      count: log.length,
-      log: log
+      
     })
 
   } catch (err) {
